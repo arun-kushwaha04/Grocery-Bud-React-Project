@@ -2,9 +2,17 @@ import React, { useState, useEffect } from 'react'
 import List from './List'
 import Alert from './Alert'
 
+const getListFromLocalStorage = ()=>{
+  let list = localStorage.getItem('list');
+  if(list){
+    return JSON.parse(list);    
+  }
+  return [];
+}
+
 function App() {
   const [name,setName] = useState('');
-  const [list,setList] = useState([]);
+  const [list,setList] = useState(getListFromLocalStorage());
   const [alert,setAlert] = useState({show:false,msg:'',type:''});
   const [isEditing,setIsEditing] = useState(false);
   const [editID,setEditID] = useState(null);
@@ -22,7 +30,7 @@ function App() {
       setIsEditing(false);
       setEditID(null);
       setName('');
-      setList(list.filter(element =>{
+      setList(list.map(element =>{
         if(element.id === editID){
           element.title = name;
         }
@@ -56,9 +64,12 @@ function App() {
     const item = list.find((element)=>{ return element.id === id})
     setName(item.title);
   }
+  useEffect(()=>{
+    localStorage.setItem('list', JSON.stringify(list));
+  },[list]);
   return <section className="section-center">
     <form className="grocery-form" onSubmit={handleSubmit}>
-      {alert.show && <Alert alert={alert} showAlert={showAlert}/>}
+      {alert.show && <Alert alert={alert} removeAlert={showAlert} list={list}/>}
       <h3>Grocery List</h3>
       <div className="form-control">
         <input type="text"
